@@ -72,7 +72,13 @@ class InputTab(Constants):
                 text = f"{program.machine_name} · " + Strings('<Select a program with a post processor>')
             else:
                 text = f"{program.machine_name} · {program.post_processor_description}"
+            if getattr(program, "is_template", False):
+                text = f"{program.machine_name} · {program.post_processor_description} · {program.template_note}"
             line.formattedText = f'<span style="color:#808080">{html.escape(text)}</span>'
+            try:
+                line.numRows = 2 if getattr(program, "is_template", False) else 1
+            except Exception:
+                pass
 
         EventRegistry.register(cls.PROGRAM_DROPDOWN_ID, setMachineLine)
         setMachineLine(programDropdown)

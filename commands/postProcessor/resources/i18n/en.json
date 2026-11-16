@@ -209,6 +209,7 @@
     "TOOLTIP TEXT: Send to the Z1": "After the files are written, each one is copied to the Z1's SD card over Wi-Fi, replacing a file with the same name. Every packet is checksummed and resent if damaged; the file isn't read back afterwards, which would double the send time. It won't send while the machine is running a job. If the Z1 is off or busy, the files are still saved on this computer and a message says why they weren't sent.<p>Names on the machine: <i>File name</i>_<i>Setup</i>.cnc, with _ for spaces.",
     "TOOLTIP TEXT: Z1 address": "The Z1's IP address on your network. <i>Find the Z1 on the network</i> fills it in.",
     "TOOLTIP TEXT: Find the Z1": "Listens for about 3 seconds for a Z1 announcing itself on this network and fills in its address. If nothing is heard (Windows Firewall can block those announcements to Fusion), it asks each address on the local network instead, which takes a couple more seconds.",
+    "TOOLTIP TEXT: Save Z1 template": "Saves the machine, post processor and changed post settings of the NC Program selected on the Post tab, for this computer. Any document can then post with <i>Z1 template</i> from the NC Program list: posting creates an NC Program named <i>Z1 Post</i> in that document and keeps it there for next time.",
     "TOOLTIP TEXT: Folder on the machine": "Where the files go on the Z1's SD card. The folder must already exist. Default /sd/gcodes/, the folder Makera Studio shows."
   },
 

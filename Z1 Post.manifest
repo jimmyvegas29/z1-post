@@ -5,7 +5,7 @@
   "description": {
     "": "Post-process Fusion CAM for the Makera Z1 and send the files to the machine over Wi-Fi. Based on the Makera Community Fusion plugin by Moinois (GPL v2)."
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "runOnStartup": false,
   "supportedOS": "windows|mac",
   "editEnabled": true,

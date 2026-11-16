@@ -41,6 +41,9 @@ class MiscTab(Constants):
         #endregion
 
 
+        from .template_section import create as create_template_group
+        create_template_group(miscTab)  # "Z1 template" group
+
         group = miscTab.children.addGroupCommandInput("renameSetupsBox", Strings("Rename setups"))
         group.isExpanded = False
 

@@ -4,6 +4,19 @@ Z1 Post is based on the [Makera Community Fusion plugin](https://github.com/Carv
 by Moinois, version 0.9.1-RC1 (GPL v2). This file lists what Z1 Post changed, as the GPL asks. The original
 project's history is kept in this repository's git log, up to tag `v0.9.1-RC1`.
 
+## 0.2.0 (2026-11-16)
+
+### Added
+- **Z1 template.** Save one NC Program's machine, post processor and changed post settings (More tab); any
+  document can then post by picking "Z1 template" in the NC Program list. Posting creates an NC Program named
+  "Z1 Post" in the document and keeps it there. It's picked automatically in a document with no NC Program.
+- After a posting error, the full traceback is saved as `last_error.txt` in the user data folder.
+
+### Changed
+- Send settings moved from the add-in folder to the user data folder (`%APPDATA%\Z1 Post` on Windows,
+  `~/Library/Application Support/Z1 Post` on a Mac), so updating the add-in keeps them. 0.1.0's settings are
+  read once from the old place.
+
 ## 0.1.0 (2026-11-16)
 
 First Z1 Post release, by jimmyvegas29.
@@ -47,5 +60,7 @@ First Z1 Post release, by jimmyvegas29.
 ### Files changed from the original
 Every changed source file carries a notice on its first line. New files: `commands/postProcessor/z1send/`
 (`send.py`, `naming.py`, `prefs.py`, `z1upload.py`), `dialog/layout/send_section.py`,
-`dialog/layout/file_names_tab.py` (moved out of `output_tab.py`), `Tests/test_z1send_naming.py`, `LICENSE`,
+`dialog/layout/file_names_tab.py` (moved out of `output_tab.py`), `dialog/layout/template_section.py`,
+`commands/postProcessor/z1template/`, `fusion_adapters/nc_program_template.py`, `z1send/userdata.py`,
+`Tests/test_z1send_naming.py`, `Tests/test_z1template.py`, `LICENSE`,
 this file. The icons (`Z1 Post.svg`, `dialog/resources/*.png`) are new artwork.

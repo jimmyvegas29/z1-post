@@ -35,7 +35,7 @@ from .. import config
 from ..setups.setups_context import SetupsContext
 
 from .layout.layout import PostDialogLayout
-from .layout import send_section
+from .layout import send_section, template_section
 from .event_registry import EventRegistry
 from .state import can_process
 
@@ -188,6 +188,7 @@ class PostDialog(PostDialogLayout):
             cam,
             selectedProgramName=Settings(Settings.NC_PROGRAM),
         ) # Get the list of NCPrograms in the current document
+        template_section.add_to_programs(cam, doc)
 
         command = args.command
 
@@ -260,6 +261,7 @@ class PostDialog(PostDialogLayout):
                     return
 
         written = ()
+        fromTemplate = Programs.Current if getattr(Programs.Current, "is_template", False) else None
         try:
             # Create a temporary folder to prepare all files in
             if Programs.Current is not None:
@@ -272,8 +274,11 @@ class PostDialog(PostDialogLayout):
             return
         except Exception as e:
             Utils.log(f'PostDialog: An error occurred during post processing: {str(e)}', LogLevels.ErrorLogLevel)
+            template_section.save_error_report()
             ui.messageBox(f"An error occurred during post processing: {str(e)}", "Error!", cast(MessageBoxButtonTypes, MessageBoxButtonTypes.OKButtonType), cast(MessageBoxIconTypes, MessageBoxIconTypes.CriticalIconType))
             return
+
+        template_section.report_failed_settings(ui, fromTemplate)
 
         # Send to the Z1 (only when ticked on the Post tab). Its own errors get their own message.
         try:

@@ -18,4 +18,4 @@ DEBUG = False
 ADDIN_NAME = os.path.basename(os.path.dirname(__file__))
 COMPANY_NAME = 'Z1 Post'
 
-PLUGIN_VERSION = '0.1.0'
+PLUGIN_VERSION = '0.2.0'
