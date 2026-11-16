@@ -21,15 +21,10 @@ from .input_tab import InputTab
 
 class MiscTab(Constants):
     @classmethod
-    def create(cls, inputs: CommandInputs, ctx: SetupsContext):
-
-        miscTab = inputs.addTabCommandInput(cls.RENAME_SETUPS_GROUP_ID, Strings("Misc"))
-
-        def setTabEnabled(input: CommandInput):
-            input.parentCommand.commandInputs.itemById(cls.OUTPUT_GROUP_ID).isEnabled = Programs.Current is not None
-
-        EventRegistry.register(cls.PROGRAM_DROPDOWN_ID, setTabEnabled)
-        setTabEnabled(inputs.itemById(cls.PROGRAM_DROPDOWN_ID)) # initialize state based on current program selection
+    def create(cls, miscTab, inputs: CommandInputs, ctx: SetupsContext):
+        """More tab: language, rename setups (closed), and saving every setting as the defaults.
+        Always enabled: none of it needs an NC program. (The old Misc tab's enable handler switched the
+        Output tab by mistake.)"""
 
         #region Language dropdown
         languageDropdown = miscTab.children.addDropDownCommandInput(cls.LANGUAGE_ID, Strings("Language"), cast(DropDownStyles, DropDownStyles.TextListDropDownStyle))
@@ -45,8 +40,8 @@ class MiscTab(Constants):
         #endregion
 
 
-        group = miscTab.children.addGroupCommandInput(cls.RENAME_SETUPS_GROUP_ID, Strings("Rename Setups"))
-        group.isExpanded = True
+        group = miscTab.children.addGroupCommandInput("renameSetupsBox", Strings("Rename setups"))
+        group.isExpanded = False
 
         #region Use regex checkbox
         useRegex = group.children.addBoolValueInput(cls.USE_REGEX_ID, Strings("Use Python regular expressions"), True, "", bool(Settings(Settings.USE_REGEX)))
@@ -57,21 +52,21 @@ class MiscTab(Constants):
         #endregion
 
         #region Find string input
-        findText = group.children.addStringValueInput(cls.FIND_STRING_ID, Strings("Search for this string"), str(Settings(Settings.FIND_STRING)))
+        findText = group.children.addStringValueInput(cls.FIND_STRING_ID, Strings("Find"), str(Settings(Settings.FIND_STRING)))
         findText.tooltip = Strings("TOOLTIP: Search for this string")
         findText.tooltipDescription = Strings("TOOLTIP TEXT: Search for this string")
         EventRegistry.register(cls.FIND_STRING_ID, lambda input: Settings.set(Settings.FIND_STRING, input.value))
         #endregion
 
         #region Replace string input
-        replaceText = group.children.addStringValueInput(cls.REPLACE_STRING_ID, Strings("Replace with this string"), Settings(Settings.REPLACE_STRING))
+        replaceText = group.children.addStringValueInput(cls.REPLACE_STRING_ID, Strings("Replace with"), Settings(Settings.REPLACE_STRING))
         replaceText.tooltip = Strings("TOOLTIP: Replace with this string")
         replaceText.tooltipDescription = Strings("TOOLTIP TEXT: Replace with this string")
         EventRegistry.register(cls.REPLACE_STRING_ID, lambda input: Settings.set(Settings.REPLACE_STRING, input.value))
         #endregion
 
         #region Only selected Setups checkbox
-        replaceOnlySelected = group.children.addBoolValueInput(cls.REPLACE_ONLY_SELECTED_ID, Strings("Only selected Setups"),  True, "", Settings(Settings.REPLACE_ONLY_SELECTED))
+        replaceOnlySelected = group.children.addBoolValueInput(cls.REPLACE_ONLY_SELECTED_ID, Strings("Only the selected setups"),  True, "", Settings(Settings.REPLACE_ONLY_SELECTED))
         replaceOnlySelected.tooltip = Strings("TOOLTIP: Only selected Setups")
         replaceOnlySelected.tooltipDescription = Strings("TOOLTIP TEXT: Only selected Setups")
         EventRegistry.register(cls.REPLACE_ONLY_SELECTED_ID, lambda input: Settings.set(Settings.REPLACE_ONLY_SELECTED, input.value))
@@ -88,7 +83,7 @@ class MiscTab(Constants):
         validateFindPattern(findText)
 
         #region Replace button
-        replaceButton = group.children.addBoolValueInput(cls.REPLACE_ID, "   " + Strings("Search and replace") + "   ", False) #l-/rjust() to widen the button some
+        replaceButton = group.children.addBoolValueInput(cls.REPLACE_ID, "   " + Strings("Rename") + "   ", False) #l-/rjust() to widen the button some
         replaceButton.isFullWidth = True
         replaceButton.tooltip = Strings("TOOLTIP: Search and replace")
         replaceButton.tooltipDescription = Strings("TOOLTIP TEXT: Search and replace")
@@ -112,4 +107,24 @@ class MiscTab(Constants):
 
         EventRegistry.register(cls.REPLACE_ID, replaceButtonHandler)
         EventRegistry.register(cls.REPLACE_ID, lambda input: InputTab._updateSetups(input, ctx))
+        #endregion
+
+        #region Save as default button (one, here, instead of under every tab)
+        saveButton = miscTab.children.addBoolValueInput(cls.SAVE_ID, "   " + Strings("Save all settings as my defaults") + "   ", False)
+        saveButton.tooltip = Strings("TOOLTIP: Save as default settings")
+        saveButton.tooltipDescription = Strings("TOOLTIP TEXT: Save as default settings")
+        saveButton.isFullWidth = True
+        saveButton.isEnabled = False
+
+        EventRegistry.register(cls.SAVE_ID, lambda input: Settings.save_default())
+
+        def setSaveButtonEnabled(input: CommandInput):
+            input.parentCommand.commandInputs.itemById(cls.SAVE_ID).isEnabled = Programs.Current is not None
+
+        EventRegistry.register(cls.PROGRAM_DROPDOWN_ID, setSaveButtonEnabled)
+        setSaveButtonEnabled(inputs.itemById(cls.PROGRAM_DROPDOWN_ID))
+
+        hint = miscTab.children.addTextBoxCommandInput('moreHint', '', '', 2, True)
+        hint.isFullWidth = True
+        hint.formattedText = '<span style="color:#808080">' + Strings("Settings are also kept with each document, as before. The Send to the Z1 settings are kept for this computer.") + '</span>'
         #endregion

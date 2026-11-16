@@ -15,9 +15,8 @@ from ..event_registry import EventRegistry
 class GCodeTab(Constants):
 
     @classmethod
-    def create(cls, inputs):
-
-        gCodeTab = TabCommandInput.cast(inputs.addTabCommandInput(cls.GCODE_OPTIONS_GROUP_ID, Strings("G-code Options")))
+    def create(cls, gCodeTab):
+        """G-code tab: rapid moves, a closed "4th axis" group, a closed "G-code blocks" group."""
         gCodeTab.isEnabled = False
 
         def setTabEnabled(input: CommandInput):
@@ -27,8 +26,42 @@ class GCodeTab(Constants):
 
         setTabEnabled(gCodeTab) # initialize state based on current program selection
 
+        #region Restore rapid moves checkbox
+        rapidMoves = gCodeTab.children.addBoolValueInput(cls.RESTORE_RAPID_MOVES_ID, Strings('Restore rapid moves'), True, "", Settings(Settings.RESTORE_RAPID_MOVES))
+        rapidMoves.tooltip = Strings("TOOLTIP: Restore rapid moves")
+        rapidMoves.tooltipDescription = Strings("TOOLTIP TEXT: Restore rapid moves")
+
+        EventRegistry.register(cls.RESTORE_RAPID_MOVES_ID, lambda checkbox: Settings(Settings.RESTORE_RAPID_MOVES, checkbox.value))
+        #endregion
+
+        #region Rapid moves max steps inbetween spinner input
+        rapidMovesMaxSteps = gCodeTab.children.addIntegerSliderListCommandInput(cls.RAPID_MOVES_MAX_STEPS_ID, Strings("Max steps"), [3, 4, 5, 6, 7, 8, 9, 10])
+        rapidMovesMaxSteps.valueOne = Settings(Settings.RAPID_MOVES_MAX_STEPS)
+        rapidMovesMaxSteps.tooltip = Strings("TOOLTIP: Max steps for rapid moves")
+        rapidMovesMaxSteps.tooltipDescription = Strings("TOOLTIP TEXT: Max steps for rapid moves")
+
+        EventRegistry.register(cls.RAPID_MOVES_MAX_STEPS_ID, lambda spinner: Settings(Settings.RAPID_MOVES_MAX_STEPS, spinner.valueOne))
+        #endregion
+
+        #region Minimum rapid restore distance
+        rapidMovesMinimumDistance = gCodeTab.children.addIntegerSpinnerCommandInput(cls.RAPID_MOVES_MINIMUM_DISTANCE_ID, Strings("Shortest move (mm)"), 0, 50, 5, Settings(Settings.RAPID_MOVES_MINIMUM_DISTANCE))
+        rapidMovesMinimumDistance.tooltip = Strings("TOOLTIP: Minimum rapid move distance (mm)")
+        rapidMovesMinimumDistance.tooltipDescription = Strings("TOOLTIP TEXT: Minimum rapid move distance (mm)")
+
+        EventRegistry.register(cls.RAPID_MOVES_MINIMUM_DISTANCE_ID, lambda input: Settings(Settings.RAPID_MOVES_MINIMUM_DISTANCE, input.value))
+
+        def setRapidMovesMinimumDistanceEnabled(checkbox: BoolValueCommandInput):
+            checkbox.parentCommand.commandInputs.itemById(cls.RAPID_MOVES_MINIMUM_DISTANCE_ID).isEnabled = checkbox.value
+
+        EventRegistry.register(cls.RESTORE_RAPID_MOVES_ID, setRapidMovesMinimumDistanceEnabled) # Register handler to enable/disable based on Restore Rapid Moves value
+        setRapidMovesMinimumDistanceEnabled(rapidMoves) # Initialize state based on current value after Minimum Rapid Restore Distance input is created
+        #endregion
+
+        axisGroup = gCodeTab.children.addGroupCommandInput("fourthAxisGroup", Strings("4th axis (machines with A)"))
+        axisGroup.isExpanded = False
+
         #region Rotate A-Axis between setups checkbox
-        rotateAAxis = gCodeTab.children.addBoolValueInput(cls.ROTATE_A_AXIS_ID, Strings('Rotate A-Axis between setups'), True, "", Settings(Settings.ROTATE_A_AXIS))
+        rotateAAxis = axisGroup.children.addBoolValueInput(cls.ROTATE_A_AXIS_ID, Strings('Rotate A between setups'), True, "", Settings(Settings.ROTATE_A_AXIS))
         rotateAAxis.tooltip = Strings("TOOLTIP: Rotate A-Axis between setups")
         rotateAAxis.tooltipDescription = Strings("TOOLTIP TEXT: Rotate A-Axis between setups")
 
@@ -37,7 +70,7 @@ class GCodeTab(Constants):
         #endregion
 
         #region Retract to safe Y on A-axis rotation checkbox
-        safeYRetraction = gCodeTab.children.addBoolValueInput(cls.SAFE_Y_RETRACTION_ID, Strings("Retract Y on A-axis rotation"), True, "", Settings(Settings.SAFE_Y_RETRACTION))
+        safeYRetraction = axisGroup.children.addBoolValueInput(cls.SAFE_Y_RETRACTION_ID, Strings("Retract Y while rotating"), True, "", Settings(Settings.SAFE_Y_RETRACTION))
         safeYRetraction.tooltip = Strings("TOOLTIP: Retract Y on A-axis rotation")
         safeYRetraction.tooltipDescription = Strings("TOOLTIP TEXT: Retract Y on A-axis rotation")
 
@@ -52,7 +85,6 @@ class GCodeTab(Constants):
                     and rotateAAxisCheckbox.isEnabled 
                     and rotateAAxisCheckbox.value)
 
-        EventRegistry.register(cls.SAFE_Y_RETRACTION_ID, lambda checkbox: Settings(Settings.SAFE_Y_RETRACTION, checkbox.value)) # Save settings
         EventRegistry.register(cls.ROTATE_A_AXIS_ID, setSafeYRetractionEnabled) # Register handler to enable/disable based on Rotate A-Axis value
         EventRegistry.register(cls.PROGRAM_DROPDOWN_ID, setSafeYRetractionEnabled) # If the program is changed, update the checkbox state
 
@@ -60,7 +92,7 @@ class GCodeTab(Constants):
         #endregion
 
         #region Safe Y-retraction coordinate number
-        input = gCodeTab.children.addIntegerSpinnerCommandInput(cls.Y_RETRACTION_COORDINATE_ID, Strings("Safe Y-retraction coordinate (mm)"), -150, 0, 10, Settings(Settings.Y_RETRACTION_COORDINATE))
+        input = axisGroup.children.addIntegerSpinnerCommandInput(cls.Y_RETRACTION_COORDINATE_ID, Strings("Safe Y (mm)"), -150, 0, 10, Settings(Settings.Y_RETRACTION_COORDINATE))
         input.tooltip = Strings("TOOLTIP: Safe Y-retraction coordinate (mm)")
         input.tooltipDescription = Strings("TOOLTIP TEXT: Safe Y-retraction coordinate (mm)")
 
@@ -83,42 +115,11 @@ class GCodeTab(Constants):
         setYRetractionCoordinateEnabled(rotateAAxis) # Initialize state based on current value after Y-retraction coordinate input is created
         #endregion
 
-        #region Restore rapid moves checkbox
-        rapidMoves = gCodeTab.children.addBoolValueInput(cls.RESTORE_RAPID_MOVES_ID, Strings('Restore rapid moves'), True, "", Settings(Settings.RESTORE_RAPID_MOVES))
-        rapidMoves.tooltip = Strings("TOOLTIP: Restore rapid moves")
-        rapidMoves.tooltipDescription = Strings("TOOLTIP TEXT: Restore rapid moves")
-
-        EventRegistry.register(cls.RESTORE_RAPID_MOVES_ID, lambda checkbox: Settings(Settings.RESTORE_RAPID_MOVES, checkbox.value))
-        #endregion
-
-        #region Rapid moves max steps inbetween spinner input
-        rapidMovesMaxSteps = gCodeTab.children.addIntegerSliderListCommandInput(cls.RAPID_MOVES_MAX_STEPS_ID, Strings("Max steps for rapid moves"), [3, 4, 5, 6, 7, 8, 9, 10])
-        rapidMovesMaxSteps.valueOne = Settings(Settings.RAPID_MOVES_MAX_STEPS)
-        rapidMovesMaxSteps.tooltip = Strings("TOOLTIP: Max steps for rapid moves")
-        rapidMovesMaxSteps.tooltipDescription = Strings("TOOLTIP TEXT: Max steps for rapid moves")
-
-        EventRegistry.register(cls.RAPID_MOVES_MAX_STEPS_ID, lambda spinner: Settings(Settings.RAPID_MOVES_MAX_STEPS, spinner.valueOne))
-        #endregion
-
-        #region Minimum rapid restore distance
-        rapidMovesMinimumDistance = gCodeTab.children.addIntegerSpinnerCommandInput(cls.RAPID_MOVES_MINIMUM_DISTANCE_ID, Strings("Minimum rapid move distance (mm)"), 0, 50, 5, Settings(Settings.RAPID_MOVES_MINIMUM_DISTANCE))
-        rapidMovesMinimumDistance.tooltip = Strings("TOOLTIP: Minimum rapid move distance (mm)")
-        rapidMovesMinimumDistance.tooltipDescription = Strings("TOOLTIP TEXT: Minimum rapid move distance (mm)")
-
-        EventRegistry.register(cls.RAPID_MOVES_MINIMUM_DISTANCE_ID, lambda input: Settings(Settings.RAPID_MOVES_MINIMUM_DISTANCE, input.value))
-
-        def setRapidMovesMinimumDistanceEnabled(checkbox: BoolValueCommandInput):
-            checkbox.parentCommand.commandInputs.itemById(cls.RAPID_MOVES_MINIMUM_DISTANCE_ID).isEnabled = checkbox.value
-
-        EventRegistry.register(cls.RESTORE_RAPID_MOVES_ID, setRapidMovesMinimumDistanceEnabled) # Register handler to enable/disable based on Restore Rapid Moves value
-        setRapidMovesMinimumDistanceEnabled(rapidMoves) # Initialize state based on current value after Minimum Rapid Restore Distance input is created
-        #endregion
-
-        blocksGroup = gCodeTab.children.addGroupCommandInput("_GCODE_ANCHORS_GROUP_ID", Strings("G-code Blocks"))
+        blocksGroup = gCodeTab.children.addGroupCommandInput("_GCODE_ANCHORS_GROUP_ID", Strings("G-code blocks"))
         blocksGroup.isExpanded = False
 
         #region Tool change string input
-        toolChangeCodes = blocksGroup.children.addTextBoxCommandInput(cls.TOOL_CHANGE_ID, Strings('Tool change code'), Settings(Settings.TOOL_CHANGE), 3, False)
+        toolChangeCodes = blocksGroup.children.addTextBoxCommandInput(cls.TOOL_CHANGE_ID, Strings('Before a tool change'), Settings(Settings.TOOL_CHANGE), 3, False)
         toolChangeCodes.tooltip = Strings("TOOLTIP: Tool change code")
         toolChangeCodes.tooltipDescription = Strings("TOOLTIP TEXT: Tool change code")
 
@@ -130,7 +131,7 @@ class GCodeTab(Constants):
         #endregion
 
         #region Body end codes textbox input
-        endCodes = blocksGroup.children.addTextBoxCommandInput(cls.END_CODES_ID, Strings('G-codes that mark ending sequence'), Settings(Settings.END_CODES), 3, False)
+        endCodes = blocksGroup.children.addTextBoxCommandInput(cls.END_CODES_ID, Strings('Program end starts at'), Settings(Settings.END_CODES), 3, False)
         endCodes.tooltip = Strings("TOOLTIP: G-codes that mark ending sequence")
         endCodes.tooltipDescription = Strings("TOOLTIP TEXT: G-codes that mark ending sequence")
 
@@ -142,7 +143,7 @@ class GCodeTab(Constants):
         #endregion
 
         #region Header end codes textbox input
-        headerEndCodes = blocksGroup.children.addTextBoxCommandInput(cls.HEADER_CODES_ID, Strings('G-codes that mark header end'), Settings(Settings.HEADER_END_CODES), 3, False)
+        headerEndCodes = blocksGroup.children.addTextBoxCommandInput(cls.HEADER_CODES_ID, Strings('Header ends at'), Settings(Settings.HEADER_END_CODES), 3, False)
         headerEndCodes.tooltip = Strings("TOOLTIP: G-codes that mark header end")
         headerEndCodes.tooltipDescription = Strings("TOOLTIP TEXT: G-codes that mark header end")
 

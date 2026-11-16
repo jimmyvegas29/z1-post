@@ -16,21 +16,14 @@ from ..state import is_output_folder_valid, is_output_name_valid, numeric_name_d
 from ...programs import Programs
 
 from ..constants import Constants
-from .output_grouping_section import create_grouping_and_safety_options
+from .output_grouping_section import create_files_and_replace, create_name_options
 
 class OutputTab(Constants):
     @classmethod
-    def create(cls, inputs):
-
-        outputTab = inputs.addTabCommandInput(cls.OUTPUT_GROUP_ID, Strings("Output Options"))
-        outputTab.isEnabled = False
-
-        def setTabEnabled(dropdown: DropDownCommandInput):
-            dropdown.parentCommand.commandInputs.itemById(cls.OUTPUT_GROUP_ID).isEnabled = Programs.Current is not None
-
+    def create_post_part(cls, outputTab, inputs):
+        """Post tab: where the files go ("Save to"), the file name, how they are split ("Files") and
+        "Replace files that already exist"."""
         programDropdown = inputs.itemById(cls.PROGRAM_DROPDOWN_ID)
-        EventRegistry.register(cls.PROGRAM_DROPDOWN_ID, setTabEnabled)
-        setTabEnabled(programDropdown) # initialize state based on current program selection
 
         #region -- Output folder table --
         outputFolderTable = outputTab.children.addTableCommandInput(cls.OUTPUT_FOLDER_TABLE_ID, Strings('Output folder'), 2, '90:10')
@@ -39,7 +32,7 @@ class OutputTab(Constants):
         outputFolderTable.tablePresentationStyle = TablePresentationStyles.transparentBackgroundTablePresentationStyle
 
         #region Output folder label, spans 2 columns
-        outputFolderLabel = inputs.addStringValueInput(cls.OUTPUT_FOLDER_LABEL_ID, '', Strings("Output folder"))
+        outputFolderLabel = inputs.addStringValueInput(cls.OUTPUT_FOLDER_LABEL_ID, '', Strings("Save to"))
         outputFolderLabel.tooltip = Strings("TOOLTIP: Output folder")
         outputFolderLabel.tooltipDescription = Strings("TOOLTIP TEXT: Output folder")
         outputFolderLabel.isReadOnly = True
@@ -126,6 +119,21 @@ class OutputTab(Constants):
 
         #endregion
 
+        create_files_and_replace(outputTab, cls)
+
+    @classmethod
+    def create_file_names_tab(cls, outputTab, inputs):
+        """File names tab: numeric names, numbering, combining, subfolders, emptying the folder.
+        Built after the Post tab, which holds the file name, "Files" and "Replace" inputs it refers to."""
+        programDropdown = inputs.itemById(cls.PROGRAM_DROPDOWN_ID)
+
+        def setTabEnabled(dropdown: DropDownCommandInput):
+            dropdown.parentCommand.commandInputs.itemById(cls.OUTPUT_GROUP_ID).isEnabled = Programs.Current is not None
+
+        EventRegistry.register(cls.PROGRAM_DROPDOWN_ID, setTabEnabled)
+        setTabEnabled(programDropdown)
+        fileName = inputs.itemById(cls.FILE_NAME_ID)
+
         #region Numeric name checkbox
         numericName = outputTab.children.addBoolValueInput(cls.NUMERIC_NAME_ID, Strings("Name must be numeric"), True, "", Settings(Settings.NUMERIC_NAME))
         numericName.tooltip = Strings("TOOLTIP: Name must be numeric")
@@ -147,7 +155,7 @@ class OutputTab(Constants):
         #endregion
 
         #region Prepend sequence number checkbox
-        prependFileNumber = outputTab.children.addBoolValueInput(cls.FILE_SEQUENCE_ID, Strings("Prepend sequence number"), True, "", Settings(Settings.FILE_SEQUENCE))
+        prependFileNumber = outputTab.children.addBoolValueInput(cls.FILE_SEQUENCE_ID, Strings("Number the files"), True, "", Settings(Settings.FILE_SEQUENCE))
         prependFileNumber.tooltip = Strings("TOOLTIP: Prepend file sequence number")
         prependFileNumber.tooltipDescription = Strings("TOOLTIP TEXT: Prepend file sequence number")
 
@@ -195,4 +203,8 @@ class OutputTab(Constants):
         setNumberingDigitsOnNumericFileName(numericName)
         #endregion
 
-        create_grouping_and_safety_options(outputTab, cls)
+        create_name_options(outputTab, cls)
+
+        hint = outputTab.children.addTextBoxCommandInput('fileNamesHint', '', '', 2, True)
+        hint.isFullWidth = True
+        hint.formattedText = '<span style="color:#808080">' + Strings("Files sent to the Z1 are named <i>File name</i>_<i>Setup</i>, with _ for spaces.") + '</span>'

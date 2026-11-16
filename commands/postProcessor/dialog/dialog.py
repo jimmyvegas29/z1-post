@@ -34,6 +34,7 @@ from .. import config
 from ..setups.setups_context import SetupsContext
 
 from .layout.layout import PostDialogLayout
+from .layout import send_section
 from .event_registry import EventRegistry
 from .state import can_process
 
@@ -257,18 +258,28 @@ class PostDialog(PostDialogLayout):
                     Utils.log('PostDialog: User cancelled operation due to unsupported A axis rotation.', LogLevels.InfoLogLevel)
                     return
 
+        written = ()
         try:
             # Create a temporary folder to prepare all files in
             if Programs.Current is not None:
                 with tempfile.TemporaryDirectory() as tmpdir:
                     Programs.Current.process(cls._ctx, Path(tmpdir))
-                    Programs.Current.write_output(cls._ctx)
+                    written = Programs.Current.write_output(cls._ctx) or ()
         except FileExistsError as e:
             Utils.log(f'PostDialog: {str(e)}', LogLevels.ErrorLogLevel)
-            ui.messageBox(str(e), "File already exists!", cast(MessageBoxButtonTypes, MessageBoxButtonTypes.OKButtonType), cast(MessageBoxIconTypes, MessageBoxIconTypes.CriticalIconType))
+            ui.messageBox(str(e) + "\n\n" + Strings("Tick \"Replace files that already exist\" on the Post tab to replace it."), "File already exists!", cast(MessageBoxButtonTypes, MessageBoxButtonTypes.OKButtonType), cast(MessageBoxIconTypes, MessageBoxIconTypes.CriticalIconType))
+            return
         except Exception as e:
             Utils.log(f'PostDialog: An error occurred during post processing: {str(e)}', LogLevels.ErrorLogLevel)
             ui.messageBox(f"An error occurred during post processing: {str(e)}", "Error!", cast(MessageBoxButtonTypes, MessageBoxButtonTypes.OKButtonType), cast(MessageBoxIconTypes, MessageBoxIconTypes.CriticalIconType))
+            return
+
+        # Send to the Z1 (only when ticked on the Post tab). Its own errors get their own message.
+        try:
+            send_section.send_after_post(ui, written)
+        except Exception as e:
+            Utils.log(f'PostDialog: sending to the Z1 failed: {str(e)}', LogLevels.ErrorLogLevel)
+            ui.messageBox(f"{e}\n\n" + Strings("The files are saved on this computer either way."), Strings("Send to the Z1"), cast(MessageBoxButtonTypes, MessageBoxButtonTypes.OKButtonType), cast(MessageBoxIconTypes, MessageBoxIconTypes.WarningIconType))
 
     # This event handler is called when the user interacts with any of the inputs in the dialog
     # which allows you to verify that all of the inputs are valid and enables the OK button.

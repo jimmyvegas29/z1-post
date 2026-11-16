@@ -149,8 +149,8 @@
       "TOOLTIP TEXT: Combine operations using same tool": "Combine operations following each other that use the same tool into a single operation.",
 
       "Clear output folder": "Clear output folder",
-      "TOOLTIP: Clear output folder": "TOOLTIP: Clear output folder",
-      "TOOLTIP TEXT: Clear output folder": "TOOLTIP TEXT: Clear output folder",
+      "TOOLTIP: Clear output folder": "Empty the output folder first",
+      "TOOLTIP TEXT: Clear output folder": "Deletes everything in the output folder (\"Save to\" on the Post tab) before the new files are written. Only available when \"Replace files that already exist\" is ticked. Not remembered: it is off each time the dialog opens.",
 
       "Overwrite existing files": "Overwrite existing files",
       "TOOLTIP: Overwrite existing files": "Allow overwriting existing files",
@@ -202,6 +202,16 @@
       "<No tool>": "<No tool>",
       "Specify a custom tool number for this tool": "Specify a custom tool number for this tool"
     },
+  "z1_layout": {
+    "TOOLTIP: Setup check": "Can this setup go with the others?",
+    "TOOLTIP TEXT: Setup check": "The first ticked setup is the <i>reference</i>. Another setup can only be posted with it if it has the same origin and its X axis is parallel. <i>A 90°</i> means it is turned around X: it needs a machine with an A axis and <i>Rotate A between setups</i> (G-code tab, 4th axis). A setup that can't be picked is greyed out and says why.",
+    "TOOLTIP TEXT: Files": "How the operations are split into files.<p><i>One file:</i> all ticked setups in one file. No pause is added between setups, so use it only when they share the stock and zero (or for 4th-axis jobs).<br><i>One per setup:</i> a file for each setup, in a folder named after the file name (unless <i>No subfolders</i> is on).<br><i>One per setup and tool:</i> a new file at every tool change.<br><i>One per operation:</i> a file for each operation.",
+    "TOOLTIP TEXT: Send to the Z1": "After the files are written, each one is copied to the Z1's SD card over Wi-Fi, replacing a file with the same name. Every packet is checksummed and resent if damaged; the file isn't read back afterwards, which would double the send time. It won't send while the machine is running a job. If the Z1 is off or busy, the files are still saved on this computer and a message says why they weren't sent.<p>Names on the machine: <i>File name</i>_<i>Setup</i>.cnc, with _ for spaces.",
+    "TOOLTIP TEXT: Z1 address": "The Z1's IP address on your network. <i>Find the Z1 on the network</i> fills it in.",
+    "TOOLTIP TEXT: Find the Z1": "Listens for about 3 seconds for a Z1 announcing itself on this network and fills in its address. If nothing is heard (Windows Firewall can block those announcements to Fusion), it asks each address on the local network instead, which takes a couple more seconds.",
+    "TOOLTIP TEXT: Folder on the machine": "Where the files go on the Z1's SD card. The folder must already exist. Default /sd/gcodes/, the folder Makera Studio shows."
+  },
+
   "Save as default settings": "Save as default settings",
   "TOOLTIP: Save as default settings": "Save as default settings",
   "TOOLTIP TEXT: Save as default settings": "Save current dialog settings as the default for new documents.",

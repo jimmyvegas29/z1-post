@@ -42,8 +42,9 @@ class _SettingsMeta(type):
 class Settings(Constants, metaclass=_SettingsMeta):
     """Manages the user settings for the Post Processor Add-In."""
 
+    # Kept for this dialog session only. "Replace files that already exist" (OVERWRITE_FILES) is remembered
+    # and defaults to on (Z1 send, 2026-11-16); emptying the output folder is destructive, so it isn't.
     _session_only_settings = frozenset({
-        Constants.OVERWRITE_FILES,
         Constants.CLEAR_FOLDER,
     })
 
@@ -57,7 +58,7 @@ class Settings(Constants, metaclass=_SettingsMeta):
     # See constants.py for details
     _default_settings = {
         Constants.END_CODES:                    "M5\nM9\nM30",
-        Constants.OVERWRITE_FILES:              False,
+        Constants.OVERWRITE_FILES:              True,
         Constants.CLEAR_FOLDER:                 False,
         Constants.OUTPUT_FOLDER:                "",
         Constants.FILE_SEQUENCE:                False,
@@ -172,7 +173,12 @@ class Settings(Constants, metaclass=_SettingsMeta):
     
     @classmethod
     def get(cls, key) -> Any:
-        return cls._items.get(key, None)
+        if key in cls._items:
+            return cls._items[key]
+        # A key added after this document's settings were saved: use the saved defaults, then the built-in ones.
+        if cls._default and key in cls._default:
+            return cls._default[key]
+        return cls._default_settings.get(key)
     
     @classmethod
     def set(cls, key: str, value: Any):

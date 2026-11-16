@@ -11,6 +11,7 @@ NAME = "name"
 ORIGIN = "origin"
 X_NORMAL = "xNormal"
 ROTATION = "rotation"
+CHECK = "check"
 
 
 def get_row_state(
@@ -44,7 +45,23 @@ def get_row_state(
             Strings("(reference)") if selected else "-"
         )
 
+    if not has_reference:
+        check_text = Strings("reference") if selected else ""
+    else:
+        problems = []
+        if not same_origin:
+            problems.append(Strings("other origin"))
+        if not parallel_x_axis:
+            problems.append(Strings("X not parallel"))
+        elif rotation != 0:
+            problems.append(Strings("A {degrees}°").format(degrees=f"{rotation:g}"))
+        if not problems:
+            check_text = Strings("OK") if selectable else ""
+        else:
+            check_text = ", ".join(problems)
+
     return {
+        CHECK: check_text,
         INDEX: setup.index,
         NAME: setup.name,
         ENABLED: selectable,
@@ -61,18 +78,13 @@ def apply_row_state(inputs: Any, row_state: dict[str, Any]) -> None:
     index = row_state[INDEX]
     checkbox = BoolValueCommandInput.cast(inputs.itemById(f"setupSelected_{index}"))
     name = StringValueCommandInput.cast(inputs.itemById(f"setupName_{index}"))
-    origin = StringValueCommandInput.cast(inputs.itemById(f"setupOrigin_{index}"))
-    x_normal = StringValueCommandInput.cast(inputs.itemById(f"setupXNormal_{index}"))
-    rotation = StringValueCommandInput.cast(inputs.itemById(f"setupARotation_{index}"))
+    check = StringValueCommandInput.cast(inputs.itemById(f"setupCheck_{index}"))
 
     checkbox.isEnabled = row_state[ENABLED]
     name.value = row_state[NAME]
     name.isEnabled = row_state[ENABLED]
-    origin.isEnabled = row_state[ENABLED]
-    x_normal.isEnabled = row_state[ENABLED]
-    rotation.isEnabled = row_state[ENABLED]
+    # The check stays readable on a greyed-out row: it says why the setup can't be picked.
+    check.isEnabled = True
 
     checkbox.value = row_state[SELECTED]
-    origin.value = row_state[ORIGIN]
-    x_normal.value = row_state[X_NORMAL]
-    rotation.value = row_state[ROTATION]
+    check.value = row_state[CHECK]

@@ -1,5 +1,6 @@
 from typing import cast
-from adsk.core import DropDownStyles, TableCommandInput
+from adsk.core import DropDownStyles, TableCommandInput, TextBoxCommandInput
+import html
 from adsk.core import MessageBoxButtonTypes
 from adsk.core import MessageBoxIconTypes
 from adsk.core import DialogResults
@@ -29,7 +30,8 @@ class InputTab(Constants):
     previous = None
 
     @classmethod
-    def create(cls, inputs, ctx: SetupsContext):
+    def create(cls, inputTab, inputs, ctx: SetupsContext):
+        """Top of the Post tab: NC program, one line naming the machine and post, and the setups table."""
 
         # helper method to make the syntax a little easier for adding 
         # items to a table.
@@ -37,9 +39,6 @@ class InputTab(Constants):
             for k, v in attrs.items():
                 setattr(obj, k, v)
             return obj
-        
-        inputTab = inputs.addTabCommandInput(cls.INPUT_SELECTION_TAB_ID, Strings("Input Selection"))
-        inputTab.activate()
 
         #region Program dropdown
         programDropdown = inputTab.children.addDropDownCommandInput(cls.PROGRAM_DROPDOWN_ID, Strings('NC Program'), DropDownStyles.TextListDropDownStyle)
@@ -55,44 +54,31 @@ class InputTab(Constants):
         programDropdown.isEnabled = True
         #endregion
 
-        #region Program machine text field
-        machineInput = inputTab.children.addStringValueInput(cls.MACHINE_ID, Strings('Machine'), Strings('<Select a program>'))
-        machineInput.tooltip = Strings("TOOLTIP: Machine")
-        machineInput.tooltipDescription = Strings("TOOLTIP TEXT: Machine")
-        machineInput.isReadOnly = True
-        machineInput.isEnabled = False
+        #region Machine and post processor: one read-only line under the program
+        machineLine = inputTab.children.addTextBoxCommandInput(cls.MACHINE_ID, '', '', 1, True)
+        machineLine.isFullWidth = True
+        machineLine.tooltip = Strings("TOOLTIP: Machine")
+        machineLine.tooltipDescription = Strings("TOOLTIP TEXT: Machine")
 
-        def setMachineValue(programDropdown):
-            machineText = programDropdown.parentCommand.commandInputs.itemById(cls.MACHINE_ID)
-            if Programs.Current is not None:
-                machineText.isEnabled = Programs.Current.has_machine
-                machineText.value = Programs.Current.machine_name if machineText.isEnabled else Strings('<Select a program with a machine configuration>')
+        def setMachineLine(programDropdown):
+            line = TextBoxCommandInput.cast(programDropdown.parentCommand.commandInputs.itemById(cls.MACHINE_ID))
+            program = Programs.Current
+            if program is None:
+                text = Strings('<Select a program>')
+            elif not program.has_machine:
+                text = Strings('<Select a program with a machine configuration>')
+            elif not program.has_post_processor:
+                text = f"{program.machine_name} · " + Strings('<Select a program with a post processor>')
+            else:
+                text = f"{program.machine_name} · {program.post_processor_description}"
+            line.formattedText = f'<span style="color:#808080">{html.escape(text)}</span>'
 
-        EventRegistry.register(cls.PROGRAM_DROPDOWN_ID, setMachineValue)  
-
-        # Set initial state of machine input based on whether a program is already selected
-        setMachineValue(programDropdown)
-        #endregion
-
-        #region Post Processor text field
-        postProcessorInput = inputTab.children.addStringValueInput(cls.POST_PROCESSOR_ID, Strings('Post Processor'), Strings('<Select a program>'))
-        postProcessorInput.tooltip = Strings("TOOLTIP: Post Processor")
-        postProcessorInput.tooltipDescription = Strings("TOOLTIP TEXT: Post Processor")
-        postProcessorInput.isReadOnly = True
-        postProcessorInput.isEnabled = False
-
-        def setPostProcessorValue(programDropdown):
-            postProcessorText = programDropdown.parentCommand.commandInputs.itemById(cls.POST_PROCESSOR_ID)
-            postProcessorText.isEnabled = Programs.Current is not None and Programs.Current.has_post_processor
-            postProcessorText.value = Programs.Current.post_processor_description if Programs.Current is not None and postProcessorText.isEnabled else Strings('<Select a program with a post processor>')
-
-        EventRegistry.register(cls.PROGRAM_DROPDOWN_ID, setPostProcessorValue)
-
-        setPostProcessorValue(programDropdown) # Set initial state of post processor input based on whether a program is already selected
+        EventRegistry.register(cls.PROGRAM_DROPDOWN_ID, setMachineLine)
+        setMachineLine(programDropdown)
         #endregion
 
         #region Setups table
-        setupsTable = TableCommandInput.cast(inputTab.children.addTableCommandInput('SetupsTable', '',5, "6:31:21:21:21")) # 5 columns with relative widths of 6, 31, 21, 21, 21 (100[%] is easier)
+        setupsTable = TableCommandInput.cast(inputTab.children.addTableCommandInput('SetupsTable', '', 3, "8:52:40")) # checkbox, setup name, check
         setupsTable.minimumVisibleRows = 3
         setupsTable.maximumVisibleRows = min(10, max(3, len([setup for setup in ctx.valid]) + 1)) # +1 for the header row
 
@@ -109,21 +95,13 @@ class InputTab(Constants):
         # Add header row
         setupsTable.addCommandInput(selectAllSetups, row, 0)
         setupsTable.addCommandInput(
-                init(inputs.addStringValueInput('', '', Strings('Setup Name')),
+                init(inputs.addStringValueInput('', '', Strings('Setup')),
                 isReadOnly = True
             ), row, 1)
-        setupsTable.addCommandInput(
-                init(inputs.addStringValueInput('', '', Strings('Origin')),
-                isReadOnly = True
-            ), row, 2)
-        setupsTable.addCommandInput(
-                init(inputs.addStringValueInput('', '', Strings('Parallel')),
-                isReadOnly = True
-            ), row, 3)
-        setupsTable.addCommandInput(
-                init(inputs.addStringValueInput('', '', Strings('Rotation')),
-                isReadOnly = True
-            ), row, 4)
+        checkHeader = init(inputs.addStringValueInput('', '', Strings('Check')), isReadOnly = True)
+        checkHeader.tooltip = Strings("TOOLTIP: Setup check")
+        checkHeader.tooltipDescription = Strings("TOOLTIP TEXT: Setup check")
+        setupsTable.addCommandInput(checkHeader, row, 2)
         
         # Creating callback for when a setup selection has changed and the table needs update.
         def onSetupChanged(checkbox):
@@ -182,20 +160,9 @@ class InputTab(Constants):
                     isEnabled = setup.is_selected
                 ),row,1)
             setupsTable.addCommandInput(
-                init(inputs.addStringValueInput(f"setupOrigin_{setup.index}", '', ''),
-                    isReadOnly = True,
-                    isEnabled = setup.is_selected
+                init(inputs.addStringValueInput(f"setupCheck_{setup.index}", '', ''),
+                    isReadOnly = True
                 ),row,2)
-            setupsTable.addCommandInput(
-                init(inputs.addStringValueInput(f"setupXNormal_{setup.index}", '', ''),
-                    isReadOnly = True,
-                    isEnabled = setup.is_selected
-                ),row,3)
-            setupsTable.addCommandInput(
-                init(inputs.addStringValueInput(f"setupARotation_{setup.index}", '', ''),
-                    isReadOnly = True,
-                    isEnabled = setup.is_selected
-                ),row,4)
 
         def updateSetupswithoutNotice(input: DropDownCommandInput):
             cls._updateSetups(input, ctx)

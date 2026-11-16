@@ -12,6 +12,13 @@ class EventRegistry:
     _last_values: dict[str, object] = {}
 
     @classmethod
+    def clear(cls):
+        """Forget every handler. Called each time the dialog is built: handlers from an earlier dialog hold
+        inputs that no longer exist, and without this they pile up (a button would act once per past opening)."""
+        cls._registry.clear()
+        cls._last_values.clear()
+
+    @classmethod
     def register(cls, id: str, callback: Callable[..., Any]):
         """Register a callback for an input object or input id.
         Callback signature: callback(input_obj, args) or callback(args)."""
