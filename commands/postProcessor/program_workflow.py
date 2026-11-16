@@ -15,8 +15,10 @@ def render_program_output(
     output_path: Path,
     output_file_name: str | None,
     file_extension: str,
-) -> None:
-    """Plan and stream every result file for one processing context."""
+) -> tuple["WrittenFile", ...]:
+    """Plan and stream every result file for one processing context. Returns the files written, each with
+    the name it should get on the Z1 (z1send/naming.py)."""
+    from .z1send.naming import written_files
     settings = context.processingSettings or context.capture_processing_settings()
     output_settings = ProgramOutputSettings(
         operationsGrouping=settings.operationsGrouping,
@@ -33,3 +35,5 @@ def render_program_output(
 
     plans = plan_output_files(context, settings, context.sanitize_filename)
     render_output_files(plans, settings.overwriteFiles)
+    return written_files(plans, output_file_name, settings.operationsGrouping, settings.numericName,
+                         context.sanitize_filename)

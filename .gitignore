@@ -9,3 +9,6 @@ __pycache__
 htmlcov/
 dist/
 TODO.md
+
+# Send to Z1: per-computer settings (machine address)
+commands/postProcessor/z1send/z1send.settings
