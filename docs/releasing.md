@@ -24,7 +24,7 @@ for seven days.
 ## Publish
 
 Repeat the dry run with its checkbox disabled. The workflow creates tag
-`vX.Y.Z`, a GitHub release named `Makera Community Fusion Plugin vX.Y.Z`, the
+`vX.Y.Z`, a GitHub release named `Z1 Post vX.Y.Z`, the
 installable zip, and its SHA-256 checksum.
 
 Versions containing a prerelease suffix, such as `-beta.1` or `-rc.1`, are
@@ -44,7 +44,7 @@ as the first failed step after the workflow starts.
 
 The release builder stamps exactly these packaged values:
 
-- `version` in `Makera Community.manifest`
+- `version` in `Z1 Post.manifest`
 - `PLUGIN_VERSION` in `config.py`
 
 It also forces packaged builds to `DEBUG = False` and excludes local

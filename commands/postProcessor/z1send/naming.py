@@ -1,3 +1,4 @@
+# Z1 Post, by jimmyvegas29, 2026-11-16. GPL v2 (see LICENSE).
 """The name a posted file gets on the Z1's SD card.
 
 Rule: always `<File name>_<Setup>.cnc`, flat in the send folder, whatever the grouping does

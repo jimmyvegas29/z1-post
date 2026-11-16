@@ -1,3 +1,4 @@
+# Modified for Z1 Post by jimmyvegas29, 2026-11-16 (GPL v2; see CHANGELOG.md). Original: Makera Community Fusion plugin by Moinois.
 from typing import cast
 from adsk.core import DropDownStyles, TableCommandInput, TextBoxCommandInput
 import html

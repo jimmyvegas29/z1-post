@@ -1,3 +1,4 @@
+# Z1 Post, by jimmyvegas29, 2026-11-16. GPL v2 (see LICENSE).
 """Send a file to a stock Makera Z1's SD card over Wi-Fi, or fetch one back. Standard library only, one
 file, so it can be copied into a Fusion 360 add-in as is.
 
@@ -9,7 +10,7 @@ file, so it can be copied into a Fusion 360 add-in as is.
     r = upload("192.168.1.100", r"E:\\...\\Setup1.cnc")          # -> /sd/gcodes/Setup1.cnc
     print(r.ok, r.message)
 
-Protocol: reference/upload_protocol_notes.md (upload) and reference/download_protocol_notes.md.
+Protocol: worked out from the Z1 Wi-Fi board firmware and Makera's app; summary in the Z1 Post README.
 The ESP32 board answers these frames itself; nothing reaches the motion board. Frame:
 86 68 | len u16 BE | type | payload | CRC-16/XMODEM u16 BE | 55 AA.
 

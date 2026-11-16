@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Modified for Z1 Post by jimmyvegas29, 2026-11-16 (GPL v2; see CHANGELOG.md). Original: Makera Community Fusion plugin by Moinois.
 """Build a version-stamped Fusion add-in release archive."""
 
 from __future__ import annotations
@@ -13,11 +14,11 @@ from pathlib import Path
 from urllib.parse import quote
 
 
-ADDIN_FOLDER = "Makera Community"
-ARCHIVE_PREFIX = "Makera-Community-Fusion-Plugin-v"
+ADDIN_FOLDER = "Z1 Post"
+ARCHIVE_PREFIX = "Z1-Post-v"
 RAW_CONTENT_ROOT = (
     "https://raw.githubusercontent.com/"
-    "Carvera-Community/Carvera_Community_FusionPlugin"
+    "jimmyvegas29/z1-post"
 )
 SEMVER = re.compile(
     r"^(?:0|[1-9][0-9]*)\."
@@ -27,9 +28,9 @@ SEMVER = re.compile(
     r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
 )
 ROOT_FILES = (
-    "Makera Community.py",
-    "Makera Community.manifest",
-    "Makera Community.svg",
+    "Z1 Post.py",
+    "Z1 Post.manifest",
+    "Z1 Post.svg",
     "config.py",
     "README.md",
 )
@@ -110,7 +111,7 @@ def stamp_config(path: Path, version: str) -> None:
 
 def read_stamped_versions(addin_dir: Path) -> tuple[str, str]:
     manifest = json.loads(
-        (addin_dir / "Makera Community.manifest").read_text(encoding="utf-8")
+        (addin_dir / "Z1 Post.manifest").read_text(encoding="utf-8")
     )
     config = (addin_dir / "config.py").read_text(encoding="utf-8")
     match = re.search(
@@ -164,6 +165,7 @@ def copy_runtime_files(project_root: Path, addin_dir: Path) -> None:
                 "*.pyc",
                 ".DS_Store",
                 "settings.settings",
+                "z1send.settings",
             ),
         )
 
@@ -195,7 +197,7 @@ def build_release(
     addin_dir.mkdir(parents=True)
 
     copy_runtime_files(project_root, addin_dir)
-    stamp_manifest(addin_dir / "Makera Community.manifest", version)
+    stamp_manifest(addin_dir / "Z1 Post.manifest", version)
     stamp_config(addin_dir / "config.py", version)
     rewrite_readme_images(addin_dir / "README.md", source_revision)
 

@@ -1,3 +1,4 @@
+# Z1 Post, by jimmyvegas29, 2026-11-16. GPL v2 (see LICENSE).
 from pathlib import Path
 from types import SimpleNamespace
 

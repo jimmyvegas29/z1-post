@@ -1,3 +1,4 @@
+# Z1 Post, by jimmyvegas29, 2026-11-16. GPL v2 (see LICENSE).
 """Send-to-Z1 settings. Kept in one file for this computer (not per Fusion document): the machine's address
 doesn't change from one design to the next."""
 from __future__ import annotations

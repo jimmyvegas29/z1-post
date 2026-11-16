@@ -1,3 +1,4 @@
+# Modified for Z1 Post by jimmyvegas29, 2026-11-16 (GPL v2; see CHANGELOG.md). Original: Makera Community Fusion plugin by Moinois.
 from adsk.core import Command
 
 from ...setups.setups_context import SetupsContext
@@ -15,7 +16,7 @@ from .misc_tab import MiscTab
 from . import send_section
 
 class PostDialogLayout(Constants):
-    """Four tabs (2026-11-16 layout, see fusion_addins/mockups/post_dialog_mock.html in the Z1 project):
+    """Four tabs (Z1 Post layout, 2026-11-16):
     Post (everything a normal post needs, plus Send to the Z1), File names, G-code, More.
 
     The tabs are created first and filled afterwards, because inputs on one tab refer to inputs on

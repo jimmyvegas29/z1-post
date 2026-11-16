@@ -1,6 +1,7 @@
+# Modified for Z1 Post by jimmyvegas29, 2026-11-16 (GPL v2; see CHANGELOG.md). Original: Makera Community Fusion plugin by Moinois.
 class Const():
-    CMD_NAME = "Makera Community Post Processor"
-    CMD_DEF_ID = "Makera_Community_Post_Processor"
+    CMD_NAME = "Z1 Post"
+    CMD_DEF_ID = "Z1_Post"
     CAM_WORKSPACE_ID = "CAMEnvironment"
     CAM_ACTIONS_PANEL_ID = "CAMActionPanel"
     POST_PROCESS_CONTROL_ID = "IronPostProcess"

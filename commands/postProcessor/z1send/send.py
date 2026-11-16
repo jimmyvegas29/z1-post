@@ -1,7 +1,8 @@
+# Z1 Post, by jimmyvegas29, 2026-11-16. GPL v2 (see LICENSE).
 """Send posted files to a Makera Z1 over Wi-Fi, from inside Fusion.
 
-The transfer itself is z1upload.py (a copy of pendant/python/z1upload.py in the Makera Z1 Upgrades
-project; see reference/upload_protocol_notes.md there). This module adds what Fusion needs: a progress
+The transfer itself is z1upload.py (shared with the makera-z1-pendant project,
+github.com/jimmyvegas29/makera-z1-pendant). This module adds what Fusion needs: a progress
 dialog with Cancel, machine-safe names, and one summary for the message box.
 """
 from __future__ import annotations

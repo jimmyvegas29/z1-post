@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ inputs.version }}
-      ASSET_NAME: Makera-Community-Fusion-Plugin-v${{ inputs.version }}.zip
+      ASSET_NAME: Z1-Post-v${{ inputs.version }}.zip
     steps:
       - name: Check out selected source
         uses: actions/checkout@v4
@@ -118,9 +118,9 @@ jobs:
           expected = os.environ["VERSION"]
           with zipfile.ZipFile(archive) as package:
               names = package.namelist()
-              manifest = json.loads(package.read("Makera Community/Makera Community.manifest"))
-              config = package.read("Makera Community/config.py").decode()
-              readme = package.read("Makera Community/README.md").decode()
+              manifest = json.loads(package.read("Z1 Post/Z1 Post.manifest"))
+              config = package.read("Z1 Post/config.py").decode()
+              readme = package.read("Z1 Post/README.md").decode()
 
           assert manifest["version"] == expected
           assert f"PLUGIN_VERSION = '{expected}'" in config
@@ -140,7 +140,7 @@ jobs:
         if: ${{ inputs.dry_run }}
         uses: actions/upload-artifact@v4
         with:
-          name: Makera-Community-Fusion-Plugin-v${{ inputs.version }}-dry-run
+          name: Z1-Post-v${{ inputs.version }}-dry-run
           path: |
             dist/${{ env.ASSET_NAME }}
             dist/${{ env.ASSET_NAME }}.sha256
@@ -159,7 +159,7 @@ jobs:
             "dist/$ASSET_NAME"
             "dist/$ASSET_NAME.sha256"
             --target "${{ steps.source.outputs.sha }}"
-            --title "Makera Community Fusion Plugin v$VERSION"
+            --title "Z1 Post v$VERSION"
             --generate-notes
           )
           if [[ "$PRERELEASE" == "true" ]]; then

@@ -1,3 +1,4 @@
+# Modified for Z1 Post by jimmyvegas29, 2026-11-16 (GPL v2; see CHANGELOG.md). Moved from output_tab.py of the Makera Community Fusion plugin by Moinois.
 from pathlib import Path
 from adsk.core import Application
 from adsk.core import BoolValueCommandInput

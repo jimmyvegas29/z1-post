@@ -1,3 +1,4 @@
+# Z1 Post, by jimmyvegas29, 2026-11-16. GPL v2 (see LICENSE).
 """Post tab: the "Send to the Z1" group. Its settings live in z1send/prefs.py (one copy for this computer)."""
 from __future__ import annotations
 

@@ -1,3 +1,4 @@
+# Modified for Z1 Post by jimmyvegas29, 2026-11-16 (GPL v2; see CHANGELOG.md). Original: Makera Community Fusion plugin by Moinois.
 import hashlib
 import importlib.util
 import json
@@ -50,7 +51,7 @@ def test_validate_version_explains_that_leading_v_is_not_allowed():
 
 def test_build_release_stamps_only_packaged_plugin_versions(tmp_path):
     output = tmp_path / "dist"
-    source_manifest = (ROOT / "Makera Community.manifest").read_bytes()
+    source_manifest = (ROOT / "Z1 Post.manifest").read_bytes()
     source_config = (ROOT / "config.py").read_bytes()
 
     archive = builder.build_release(
@@ -60,31 +61,31 @@ def test_build_release_stamps_only_packaged_plugin_versions(tmp_path):
         source_revision="0123456789abcdef",
     )
 
-    assert archive.name == "Makera-Community-Fusion-Plugin-v2.3.4-beta.5.zip"
+    assert archive.name == "Z1-Post-v2.3.4-beta.5.zip"
     with zipfile.ZipFile(archive) as package:
         names = set(package.namelist())
         manifest = json.loads(
-            package.read("Makera Community/Makera Community.manifest")
+            package.read("Z1 Post/Z1 Post.manifest")
         )
-        config = package.read("Makera Community/config.py").decode()
-        readme = package.read("Makera Community/README.md").decode()
+        config = package.read("Z1 Post/config.py").decode()
+        readme = package.read("Z1 Post/README.md").decode()
 
     assert manifest["version"] == "2.3.4-beta.5"
     assert "PLUGIN_VERSION = '2.3.4-beta.5'" in config
     assert "DEBUG = False" in config
     assert 'src="resources/' not in readme
     assert (
-        "https://raw.githubusercontent.com/Carvera-Community/"
-        "Carvera_Community_FusionPlugin/0123456789abcdef/"
-        "resources/readme/installation/step1.png"
+        "https://raw.githubusercontent.com/jimmyvegas29/"
+        "z1-post/0123456789abcdef/"
+        "resources/readme/screenshots/post_tab.png"
     ) in readme
-    assert "Makera Community/Makera Community.py" in names
-    assert any(name.startswith("Makera Community/commands/") for name in names)
-    assert any(name.startswith("Makera Community/lib/") for name in names)
+    assert "Z1 Post/Z1 Post.py" in names
+    assert any(name.startswith("Z1 Post/commands/") for name in names)
+    assert any(name.startswith("Z1 Post/lib/") for name in names)
     assert not any("Tests/" in name for name in names)
     assert not any("__pycache__" in name or name.endswith(".pyc") for name in names)
     assert not any(name.endswith("settings.settings") for name in names)
-    assert (ROOT / "Makera Community.manifest").read_bytes() == source_manifest
+    assert (ROOT / "Z1 Post.manifest").read_bytes() == source_manifest
     assert (ROOT / "config.py").read_bytes() == source_config
     assert 'src="resources/' in (ROOT / "README.md").read_text()
 
