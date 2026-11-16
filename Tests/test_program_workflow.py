@@ -37,21 +37,24 @@ def test_render_program_output_prepares_plans_and_renders(tmp_path, monkeypatch)
     context = make_context()
     rendered = []
     monkeypatch.setattr(workflow, "prepare_output_folder", lambda path, clear: True)
-    monkeypatch.setattr(workflow, "plan_output_files", lambda *args: ("plan",))
+    plan = SimpleNamespace(path=tmp_path / "job" / "Setup 1.nc", setups=[SimpleNamespace(name="Setup 1")])
+    monkeypatch.setattr(workflow, "plan_output_files", lambda *args: (plan,))
     monkeypatch.setattr(
         workflow,
         "render_output_files",
         lambda plans, overwrite: rendered.append((plans, overwrite)),
     )
 
-    workflow.render_program_output(context, tmp_path, "job", ".nc")
+    written = workflow.render_program_output(context, tmp_path, "job", ".nc")
 
     assert context.events == [
         ("extension", ".nc"),
         ("path", tmp_path),
         ("name", "job"),
     ]
-    assert rendered == [(('plan',), True)]
+    assert rendered == [((plan,), True)]
+    # Z1 Post: each written file comes back with its name for the machine
+    assert [(w.path, w.send_name) for w in written] == [(plan.path, "job_Setup 1.nc")]
 
 
 def test_render_program_output_stops_when_folder_preparation_fails(

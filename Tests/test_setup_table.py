@@ -30,6 +30,7 @@ def test_reference_row_reports_alignment_and_rotation():
         table.ORIGIN: "Same",
         table.X_NORMAL: "Aligned",
         table.ROTATION: "90°",
+        table.CHECK: "A 90°",
     }
 
 
@@ -66,3 +67,33 @@ def test_first_selected_setup_is_rendered_as_reference():
     assert state[table.ORIGIN] == "(reference)"
     assert state[table.X_NORMAL] == "(reference)"
     assert state[table.ROTATION] == "(reference)"
+    assert state[table.CHECK] == "reference"
+
+
+def test_check_column_explains_why_a_setup_cannot_be_picked():
+    state = table.get_row_state(
+        setup(),
+        has_reference=True,
+        valid_program=True,
+        same_origin=False,
+        parallel_x_axis=True,
+        can_rotate=False,
+        rotation=180,
+        machine_has_a_axis=False,
+    )
+    assert not state[table.ENABLED]
+    assert state[table.CHECK] == "other origin, A 180°"
+
+
+def test_check_column_says_ok_for_a_matching_setup():
+    state = table.get_row_state(
+        setup(),
+        has_reference=True,
+        valid_program=True,
+        same_origin=True,
+        parallel_x_axis=True,
+        can_rotate=False,
+        rotation=0,
+        machine_has_a_axis=False,
+    )
+    assert state[table.CHECK] == "OK"

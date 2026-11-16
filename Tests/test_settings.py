@@ -52,7 +52,8 @@ def test_save_excludes_session_only_safety_settings():
 
     saved = json.loads(attributes.itemByName(Const.ATTR_GROUP, Const.ATTR_NAME).value)
     assert saved[Constants.LANGUAGE] == "sv"
-    assert Constants.OVERWRITE_FILES not in saved
+    # Z1 Post: "Replace files that already exist" is remembered; emptying the folder is not.
+    assert saved[Constants.OVERWRITE_FILES] is True
     assert Constants.CLEAR_FOLDER not in saved
     assert Settings.get(Constants.OVERWRITE_FILES)
     assert Settings.get(Constants.CLEAR_FOLDER)
@@ -65,7 +66,7 @@ def test_load_resets_legacy_persisted_safety_settings():
 
     Settings.load(FakeAttributes(persisted))
 
-    assert not Settings.get(Constants.OVERWRITE_FILES)
+    assert Settings.get(Constants.OVERWRITE_FILES)  # Z1 Post: remembered
     assert not Settings.get(Constants.CLEAR_FOLDER)
 
 
@@ -77,8 +78,15 @@ def test_save_default_excludes_session_only_settings():
     Settings.save_default()
 
     saved = json.loads(Path(Settings._path).read_text(encoding="utf-8"))
-    assert Constants.OVERWRITE_FILES not in saved
+    assert saved[Constants.OVERWRITE_FILES] is True  # Z1 Post: remembered
     assert Constants.CLEAR_FOLDER not in saved
+
+
+def test_overwrite_defaults_on_and_new_keys_fall_back_to_defaults():
+    Settings._items = {Constants.LANGUAGE: "en"}  # a document saved before a key existed
+    assert Settings._default_settings[Constants.OVERWRITE_FILES] is True
+    assert Settings.get(Constants.OVERWRITE_FILES) is True
+    assert Settings.get(Constants.TOOL_CHANGE) == Settings._default_settings[Constants.TOOL_CHANGE]
 
 
 def test_save_document_does_not_implicitly_replace_global_defaults(tmp_path):

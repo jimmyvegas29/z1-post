@@ -10,6 +10,7 @@ from ..constants import Constants
 from .input_tab import InputTab
 from .gcode_tab import GCodeTab
 from .output_tab import OutputTab
+from .file_names_tab import FileNamesTab
 from .misc_tab import MiscTab
 from . import send_section
 
@@ -43,7 +44,7 @@ class PostDialogLayout(Constants):
         OutputTab.create_post_part(postTab, inputs)    # Save to, File name, Files, Replace
         send_section.create(postTab)                   # Send to the Z1
         GCodeTab.create(gcodeTab)                      # holds Rotate A, which the setups table reads
-        OutputTab.create_file_names_tab(namesTab, inputs)
+        FileNamesTab.create(namesTab, inputs)
         MiscTab.create(moreTab, inputs, ctx)
 
         InputTab._updateSetups(inputs.itemById(cls.PROGRAM_DROPDOWN_ID), ctx) # initialize table state based on current program selection
