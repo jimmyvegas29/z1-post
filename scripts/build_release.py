@@ -33,6 +33,8 @@ ROOT_FILES = (
     "Z1 Post.svg",
     "config.py",
     "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
 )
 ROOT_DIRECTORIES = ("commands", "lib")
 IGNORED_NAMES = {".DS_Store", "__pycache__"}

@@ -80,6 +80,8 @@ def test_build_release_stamps_only_packaged_plugin_versions(tmp_path):
         "resources/readme/screenshots/post_tab.png"
     ) in readme
     assert "Z1 Post/Z1 Post.py" in names
+    assert "Z1 Post/LICENSE" in names  # GPL v2 ships with every copy
+    assert "Z1 Post/CHANGELOG.md" in names
     assert any(name.startswith("Z1 Post/commands/") for name in names)
     assert any(name.startswith("Z1 Post/lib/") for name in names)
     assert not any("Tests/" in name for name in names)

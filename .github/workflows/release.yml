@@ -127,6 +127,8 @@ jobs:
           assert "DEBUG = False" in config
           assert 'src="resources/' not in readme
           assert "raw.githubusercontent.com" in readme
+          assert "Z1 Post/LICENSE" in names
+          assert "Z1 Post/CHANGELOG.md" in names
           assert not any(
               "Tests/" in name
               or "__pycache__" in name
